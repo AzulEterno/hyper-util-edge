@@ -1062,6 +1062,15 @@ impl<E> Http2Builder<'_, E> {
         self
     }
 
+    /// Optional per-connection encoded DATA-copy target; `None` disables copying.
+    ///
+    /// Values below 32786 or above `isize::MAX` return `InvalidInput` before
+    /// changing the builder. This only affects HTTP/2, with lazy allocation.
+    pub fn write_batch_size(&mut self, bytes: Option<usize>) -> std::io::Result<&mut Self> {
+        self.inner.http2.write_batch_size(bytes)?;
+        Ok(self)
+    }
+
     /// Enables the [extended CONNECT protocol].
     ///
     /// [extended CONNECT protocol]: https://datatracker.ietf.org/doc/html/rfc8441#section-4
@@ -1382,3 +1391,7 @@ mod tests {
         Ok(Response::new(Full::new(Bytes::from(BODY))))
     }
 }
+
+#[cfg(all(test, feature = "tokio", feature = "client", feature = "http2"))]
+#[path = "../../../tests/write_batch_size.rs"]
+mod write_batch_tests;
